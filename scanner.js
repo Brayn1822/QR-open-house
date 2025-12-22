@@ -1,90 +1,76 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
 
 let qrReader;
-let escaneando = false;
 let ultimoQR = "";
 
-// 👉 INICIAR ESCANEO
-function iniciarScanner() {
-  document.getElementById("menu").style.display = "none";
-  document.getElementById("resultado").innerHTML = "";
-  document.getElementById("reader").classList.remove("hidden");
+// 👉 ABRIR SCANNER
+function abrirScanner() {
+  document.getElementById("pantalla-menu").classList.add("hidden");
+  document.getElementById("pantalla-resultado").classList.add("hidden");
+  document.getElementById("pantalla-scanner").classList.remove("hidden");
 
   if (!qrReader) {
     qrReader = new Html5Qrcode("reader");
   }
 
-  if (escaneando) return;
-
-  escaneando = true;
-
   qrReader.start(
     { facingMode: "environment" },
-    { fps: 15, qrbox: { width: 320, height: 320 } },
+    { fps: 15, qrbox: 300 },
     onScanSuccess
   );
 }
 
-// 👉 CUANDO SE LEE UN QR
+// 👉 CUANDO LEE QR
 function onScanSuccess(text) {
   if (text === ultimoQR) return;
-
   ultimoQR = text;
-  detenerScanner();
+
+  qrReader.stop();
 
   fetch(`${API_URL}?id=${text}`)
-    .then(res => res.json())
-    .then(data => manejarRespuesta(data, text));
-}
-
-// 👉 DETENER ESCANEO
-function detenerScanner() {
-  if (qrReader && escaneando) {
-    qrReader.stop();
-    escaneando = false;
-  }
+    .then(r => r.json())
+    .then(data => mostrarResultado(data, text));
 }
 
 // 👉 MOSTRAR RESULTADO
-function manejarRespuesta(data, qr) {
+function mostrarResultado(data, qr) {
+  document.getElementById("pantalla-scanner").classList.add("hidden");
+  document.getElementById("pantalla-resultado").classList.remove("hidden");
 
   if (data.status === "ok" || data.status === "created") {
-    document.getElementById("resultado").innerHTML = `
+    document.getElementById("pantalla-resultado").innerHTML = `
       <div class="ok">
         <h2>✅ Asistencia registrada</h2>
         <p><strong>${data.nombre}</strong></p>
         <p>${data.area}</p>
       </div>
     `;
-
-    setTimeout(volverMenu, 1800);
+    setTimeout(volverMenu, 2000);
   }
 
   if (data.status === "new") {
-    mostrarFormularioManual(qr);
-  }
-
-  if (data.status === "denied") {
-    alert("❌ Contraseña incorrecta");
-    volverMenu();
+    abrirFormulario(qr);
   }
 }
 
 // 👉 FORMULARIO MANUAL
-function mostrarFormularioManual(qr = "") {
-  detenerScanner();
-  document.getElementById("menu").style.display = "none";
+function abrirFormulario(qr = "") {
+  document.getElementById("pantalla-menu").classList.add("hidden");
+  document.getElementById("pantalla-scanner").classList.add("hidden");
+  document.getElementById("pantalla-resultado").classList.remove("hidden");
 
-  document.getElementById("resultado").innerHTML = `
-    <h2>🆕 Nuevo Registro</h2>
-
-    <input id="qr" placeholder="ID QR" value="${qr}" /><br><br>
-    <input id="doc" placeholder="Documento" /><br><br>
-    <input id="nom" placeholder="Nombre" /><br><br>
-    <input id="area" placeholder="Área" /><br><br>
-    <input id="pass" type="password" placeholder="Contraseña" /><br><br>
-
-    <button class="btn btn-new" onclick="registrar()">Registrar</button>
+  document.getElementById("pantalla-resultado").innerHTML = `
+    <div>
+      <h2>🆕 Nuevo Registro</h2>
+      <input id="qr" placeholder="ID QR" value="${qr}"><br><br>
+      <input id="doc" placeholder="Documento"><br><br>
+      <input id="nom" placeholder="Nombre"><br><br>
+      <input id="area" placeholder="Área"><br><br>
+      <input id="pass" type="password" placeholder="Contraseña"><br><br>
+      <button class="btn btn-new" onclick="registrar()">Registrar</button>
+      <br><br>
+      <button class="btn btn-cancel" onclick="volverMenu()">Cancelar</button>
+    </div>
   `;
 }
 
@@ -100,14 +86,14 @@ function registrar() {
       password: pass.value
     })
   })
-  .then(res => res.json())
-  .then(data => manejarRespuesta(data, qr.value));
+  .then(r => r.json())
+  .then(data => mostrarResultado(data, qr.value));
 }
 
-// 👉 VOLVER AL MENÚ
+// 👉 VOLVER AL MENU
 function volverMenu() {
-  document.getElementById("menu").style.display = "flex";
-  document.getElementById("reader").classList.add("hidden");
-  document.getElementById("resultado").innerHTML = "";
   ultimoQR = "";
+  document.getElementById("pantalla-menu").classList.remove("hidden");
+  document.getElementById("pantalla-scanner").classList.add("hidden");
+  document.getElementById("pantalla-resultado").classList.add("hidden");
 }
