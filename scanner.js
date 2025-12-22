@@ -1,14 +1,50 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
-let lastQR = "";
+let html5Qr;
+let ultimoQR = "";
+let escaneando = false;
 
-function onScanSuccess(decodedText) {
-  lastQR = decodedText;
-  fetch(`${API_URL}?id=${decodedText}`)
-    .then(r => r.json())
-    .then(data => manejarRespuesta(data));
+// 👉 BOTÓN: INICIAR SCANNER
+function iniciarScanner() {
+  document.getElementById("reader").classList.remove("oculto");
+  document.getElementById("resultado").innerHTML = "";
+
+  if (!html5Qr) {
+    html5Qr = new Html5Qrcode("reader");
+  }
+
+  if (escaneando) return;
+
+  escaneando = true;
+
+  html5Qr.start(
+    { facingMode: "environment" },
+    { fps: 15, qrbox: { width: 350, height: 350 } },
+    onScanSuccess
+  );
 }
 
-function manejarRespuesta(data) {
+// 👉 CUANDO LEE EL QR
+function onScanSuccess(text) {
+  if (text === ultimoQR) return; // evita doble lectura
+
+  ultimoQR = text;
+  detenerScanner();
+
+  fetch(`${API_URL}?id=${text}`)
+    .then(r => r.json())
+    .then(data => manejarRespuesta(data, text));
+}
+
+// 👉 DETENER SCANNER
+function detenerScanner() {
+  if (html5Qr && escaneando) {
+    html5Qr.stop();
+    escaneando = false;
+  }
+}
+
+// 👉 MANEJO DE RESPUESTA
+function manejarRespuesta(data, qr) {
 
   if (data.status === "ok" || data.status === "created") {
     document.getElementById("resultado").innerHTML = `
@@ -18,10 +54,13 @@ function manejarRespuesta(data) {
         <p><strong>Área:</strong> ${data.area}</p>
       </div>
     `;
+
+    // 🔁 vuelve a escanear automáticamente
+    setTimeout(iniciarScanner, 1500);
   }
 
   if (data.status === "new") {
-    mostrarFormularioManual();
+    mostrarFormularioManual(qr);
   }
 
   if (data.status === "denied") {
@@ -30,11 +69,13 @@ function manejarRespuesta(data) {
 }
 
 // 👉 FORMULARIO MANUAL
-function mostrarFormularioManual() {
+function mostrarFormularioManual(qr = "") {
+  detenerScanner();
+
   document.getElementById("resultado").innerHTML = `
     <h3>🆕 Registrar nuevo usuario</h3>
 
-    <input id="qr" placeholder="ID QR (ej: QR1501)" /><br>
+    <input id="qr" placeholder="ID QR" value="${qr}" /><br>
     <input id="doc" placeholder="Documento" /><br>
     <input id="nom" placeholder="Nombre" /><br>
     <input id="area" placeholder="Área de servicio" /><br>
@@ -44,14 +85,12 @@ function mostrarFormularioManual() {
   `;
 }
 
-// 👉 ENVÍO AL BACKEND
+// 👉 REGISTRAR PERSONA
 function registrar() {
-  const idQR = document.getElementById("qr").value || lastQR;
-
   fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({
-      id: idQR,
+      id: qr.value,
       documento: doc.value,
       nombre: nom.value,
       area: area.value,
@@ -59,12 +98,5 @@ function registrar() {
     })
   })
   .then(r => r.json())
-  .then(data => manejarRespuesta(data));
+  .then(data => manejarRespuesta(data, qr.value));
 }
-
-// 👉 INICIAR LECTOR QR
-new Html5Qrcode("reader").start(
-  { facingMode: "environment" },
-  { fps: 10, qrbox: 250 },
-  onScanSuccess
-);
