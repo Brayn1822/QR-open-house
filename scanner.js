@@ -1,4 +1,4 @@
-const API_URL = "PEGA_AQUI_URL_DEL_WEB_APP";
+const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
 
 function onScanSuccess(decodedText) {
   fetch(`${API_URL}?id=${decodedText}`)
