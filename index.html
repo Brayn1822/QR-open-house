@@ -1,13 +1,13 @@
 <body>
 
-<h1>📋 Registro de Asistencia</h1>
+<h1>📋 Asistencia Manantial</h1>
 
-<div id="reader"></div>
+<div id="acciones">
+  <button onclick="iniciarScanner()">📷 Leer código QR</button>
+  <button onclick="mostrarFormularioManual()">➕ Crear nuevo</button>
+</div>
 
-<button id="btnNuevo" onclick="mostrarFormularioManual()">
-  ➕ Registrar nuevo usuario
-</button>
-
+<div id="reader" class="oculto"></div>
 <div id="resultado"></div>
 
 <script src="scanner.js"></script>
