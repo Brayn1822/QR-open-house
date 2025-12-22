@@ -1,91 +1,140 @@
+/************************************
+ CONFIG
+*************************************/
 const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
-let qrReader;
+
+/************************************
+ VARIABLES
+*************************************/
+let qrReader = null;
 let ultimoQR = "";
 
-/* UTILIDAD */
+/************************************
+ UTILIDAD PANTALLAS
+*************************************/
 function mostrar(id) {
-  document.querySelectorAll(".pantalla").forEach(p => p.classList.remove("activa"));
+  document.querySelectorAll(".pantalla").forEach(p =>
+    p.classList.remove("activa")
+  );
   document.getElementById(id).classList.add("activa");
 }
 
-/* MENU */
+/************************************
+ MENU
+*************************************/
 function volverMenu() {
   ultimoQR = "";
-  if (qrReader) qrReader.stop().catch(() => {});
+
+  if (qrReader) {
+    qrReader.stop().catch(() => {});
+  }
+
   mostrar("pantalla-menu");
 }
 
-/* SCANNER */
+/************************************
+ SCANNER
+*************************************/
 function abrirScanner() {
   mostrar("pantalla-scanner");
 
-  if (!qrReader) {
-    qrReader = new Html5Qrcode("reader");
-  }
+  // Espera a que el DOM esté visible
+  setTimeout(() => {
 
-  qrReader.start(
-    { facingMode: "environment" },
-    { fps: 15, qrbox: 250 },
-    onScanSuccess
-  );
+    if (qrReader) {
+      qrReader.stop().catch(() => {});
+      qrReader.clear();
+    }
+
+    qrReader = new Html5Qrcode("reader");
+
+    qrReader.start(
+      { facingMode: "environment" },
+      { fps: 15, qrbox: 250 },
+      onScanSuccess,
+      () => {}
+    );
+
+  }, 300);
 }
 
 function onScanSuccess(text) {
   if (text === ultimoQR) return;
   ultimoQR = text;
 
-  qrReader.stop();
+  qrReader.stop().catch(() => {});
 
-  fetch(`${API_URL}?id=${text}`)
+  fetch(`${API_URL}?id=${encodeURIComponent(text)}`)
     .then(r => r.json())
-    .then(data => mostrarResultado(data, text));
+    .then(data => procesarRespuesta(data, text))
+    .catch(() => {
+      mostrarMensaje("❌ Error de conexión");
+      setTimeout(volverMenu, 2000);
+    });
 }
 
-/* RESULTADO */
-function mostrarResultado(data, qr) {
-  mostrar("pantalla-resultado");
+/************************************
+ RESPUESTAS
+*************************************/
+function procesarRespuesta(data, qr) {
 
+  // REGISTRADO
   if (data.status === "ok" || data.status === "created") {
-    pantallaResultado(`
+    mostrarMensaje(`
       <div class="ok">
         <h2>✅ Asistencia registrada</h2>
         <p><strong>${data.nombre}</strong></p>
         <p>${data.area}</p>
       </div>
     `);
+
     setTimeout(volverMenu, 2000);
-  } else {
-    abrirFormulario(qr);
+    return;
   }
+
+  // NO EXISTE
+  abrirFormulario(qr);
 }
 
-function pantallaResultado(html) {
+/************************************
+ MENSAJES
+*************************************/
+function mostrarMensaje(html) {
+  mostrar("pantalla-resultado");
   document.getElementById("pantalla-resultado").innerHTML = html;
 }
 
-/* FORMULARIO */
+/************************************
+ FORMULARIO
+*************************************/
 function abrirFormulario(qr = "") {
   mostrar("pantalla-resultado");
 
-  pantallaResultado(`
-    <div style="width:100%;max-width:400px">
+  document.getElementById("pantalla-resultado").innerHTML = `
+    <div style="width:100%;max-width:420px">
+
       <h2>🆕 Nuevo Registro</h2>
-      <input id="qr" value="${qr}" placeholder="ID QR" style="width:100%;height:45px"><br><br>
-      <input id="doc" placeholder="Documento" style="width:100%;height:45px"><br><br>
-      <input id="nom" placeholder="Nombre" style="width:100%;height:45px"><br><br>
-      <input id="area" placeholder="Área" style="width:100%;height:45px"><br><br>
-      <input id="pass" type="password" placeholder="Contraseña" style="width:100%;height:45px"><br><br>
+
+      <input id="qr" value="${qr}" placeholder="ID QR"><br><br>
+      <input id="doc" placeholder="Documento"><br><br>
+      <input id="nom" placeholder="Nombre completo"><br><br>
+      <input id="area" placeholder="Área de servicio"><br><br>
+      <input id="pass" type="password" placeholder="Contraseña"><br><br>
 
       <button class="btn btn-new" onclick="registrar()">Registrar</button>
       <button class="btn btn-cancel" onclick="volverMenu()">Cancelar</button>
+
     </div>
-  `);
+  `;
 }
 
-/* REGISTRAR */
+/************************************
+ REGISTRAR
+*************************************/
 function registrar() {
   fetch(API_URL, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       id: qr.value,
       documento: doc.value,
@@ -95,5 +144,9 @@ function registrar() {
     })
   })
   .then(r => r.json())
-  .then(data => mostrarResultado(data, qr.value));
+  .then(data => procesarRespuesta(data, qr.value))
+  .catch(() => {
+    mostrarMensaje("❌ Error al registrar");
+    setTimeout(volverMenu, 2000);
+  });
 }
