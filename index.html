@@ -10,28 +10,24 @@
 
 <body>
 
-<div id="app">
-
+<div id="pantalla-menu">
   <h1>📋 Asistencia</h1>
 
-  <!-- BOTONES PRINCIPALES -->
-  <div id="menu">
-    <button class="btn btn-scan" onclick="iniciarScanner()">
-      📷 Leer Código QR
-    </button>
+  <button class="btn btn-scan" onclick="abrirScanner()">
+    📷 Leer Código QR
+  </button>
 
-    <button class="btn btn-new" onclick="mostrarFormularioManual()">
-      ➕ Crear Nuevo
-    </button>
-  </div>
-
-  <!-- LECTOR -->
-  <div id="reader" class="hidden"></div>
-
-  <!-- RESULTADOS / FORMULARIO -->
-  <div id="resultado"></div>
-
+  <button class="btn btn-new" onclick="abrirFormulario()">
+    ➕ Crear Nuevo
+  </button>
 </div>
+
+<div id="pantalla-scanner" class="hidden">
+  <div id="reader"></div>
+  <button class="btn btn-cancel" onclick="volverMenu()">⬅ Volver</button>
+</div>
+
+<div id="pantalla-resultado" class="hidden"></div>
 
 <script src="scanner.js"></script>
 </body>
