@@ -1,62 +1,63 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
-let html5Qr;
-let ultimoQR = "";
+
+let qrReader;
 let escaneando = false;
+let ultimoQR = "";
 
-// 👉 BOTÓN: INICIAR SCANNER
+// 👉 INICIAR ESCANEO
 function iniciarScanner() {
-  document.getElementById("reader").classList.remove("oculto");
+  document.getElementById("menu").style.display = "none";
   document.getElementById("resultado").innerHTML = "";
+  document.getElementById("reader").classList.remove("hidden");
 
-  if (!html5Qr) {
-    html5Qr = new Html5Qrcode("reader");
+  if (!qrReader) {
+    qrReader = new Html5Qrcode("reader");
   }
 
   if (escaneando) return;
 
   escaneando = true;
 
-  html5Qr.start(
+  qrReader.start(
     { facingMode: "environment" },
-    { fps: 15, qrbox: { width: 350, height: 350 } },
+    { fps: 15, qrbox: { width: 320, height: 320 } },
     onScanSuccess
   );
 }
 
-// 👉 CUANDO LEE EL QR
+// 👉 CUANDO SE LEE UN QR
 function onScanSuccess(text) {
-  if (text === ultimoQR) return; // evita doble lectura
+  if (text === ultimoQR) return;
 
   ultimoQR = text;
   detenerScanner();
 
   fetch(`${API_URL}?id=${text}`)
-    .then(r => r.json())
+    .then(res => res.json())
     .then(data => manejarRespuesta(data, text));
 }
 
-// 👉 DETENER SCANNER
+// 👉 DETENER ESCANEO
 function detenerScanner() {
-  if (html5Qr && escaneando) {
-    html5Qr.stop();
+  if (qrReader && escaneando) {
+    qrReader.stop();
     escaneando = false;
   }
 }
 
-// 👉 MANEJO DE RESPUESTA
+// 👉 MOSTRAR RESULTADO
 function manejarRespuesta(data, qr) {
 
   if (data.status === "ok" || data.status === "created") {
     document.getElementById("resultado").innerHTML = `
       <div class="ok">
         <h2>✅ Asistencia registrada</h2>
-        <p><strong>Nombre:</strong> ${data.nombre}</p>
-        <p><strong>Área:</strong> ${data.area}</p>
+        <p><strong>${data.nombre}</strong></p>
+        <p>${data.area}</p>
       </div>
     `;
 
-    // 🔁 vuelve a escanear automáticamente
-    setTimeout(iniciarScanner, 1500);
+    setTimeout(volverMenu, 1800);
   }
 
   if (data.status === "new") {
@@ -65,27 +66,29 @@ function manejarRespuesta(data, qr) {
 
   if (data.status === "denied") {
     alert("❌ Contraseña incorrecta");
+    volverMenu();
   }
 }
 
 // 👉 FORMULARIO MANUAL
 function mostrarFormularioManual(qr = "") {
   detenerScanner();
+  document.getElementById("menu").style.display = "none";
 
   document.getElementById("resultado").innerHTML = `
-    <h3>🆕 Registrar nuevo usuario</h3>
+    <h2>🆕 Nuevo Registro</h2>
 
-    <input id="qr" placeholder="ID QR" value="${qr}" /><br>
-    <input id="doc" placeholder="Documento" /><br>
-    <input id="nom" placeholder="Nombre" /><br>
-    <input id="area" placeholder="Área de servicio" /><br>
+    <input id="qr" placeholder="ID QR" value="${qr}" /><br><br>
+    <input id="doc" placeholder="Documento" /><br><br>
+    <input id="nom" placeholder="Nombre" /><br><br>
+    <input id="area" placeholder="Área" /><br><br>
     <input id="pass" type="password" placeholder="Contraseña" /><br><br>
 
-    <button onclick="registrar()">Registrar</button>
+    <button class="btn btn-new" onclick="registrar()">Registrar</button>
   `;
 }
 
-// 👉 REGISTRAR PERSONA
+// 👉 REGISTRAR
 function registrar() {
   fetch(API_URL, {
     method: "POST",
@@ -97,6 +100,14 @@ function registrar() {
       password: pass.value
     })
   })
-  .then(r => r.json())
+  .then(res => res.json())
   .then(data => manejarRespuesta(data, qr.value));
+}
+
+// 👉 VOLVER AL MENÚ
+function volverMenu() {
+  document.getElementById("menu").style.display = "flex";
+  document.getElementById("reader").classList.add("hidden");
+  document.getElementById("resultado").innerHTML = "";
+  ultimoQR = "";
 }
