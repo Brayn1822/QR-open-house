@@ -1,14 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Asistencia Manantial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+
 <body>
 
-<h1>📋 Asistencia Manantial</h1>
+<div id="app">
 
-<div id="acciones">
-  <button onclick="iniciarScanner()">📷 Leer código QR</button>
-  <button onclick="mostrarFormularioManual()">➕ Crear nuevo</button>
+  <h1>📋 Asistencia</h1>
+
+  <!-- BOTONES PRINCIPALES -->
+  <div id="menu">
+    <button class="btn btn-scan" onclick="iniciarScanner()">
+      📷 Leer Código QR
+    </button>
+
+    <button class="btn btn-new" onclick="mostrarFormularioManual()">
+      ➕ Crear Nuevo
+    </button>
+  </div>
+
+  <!-- LECTOR -->
+  <div id="reader" class="hidden"></div>
+
+  <!-- RESULTADOS / FORMULARIO -->
+  <div id="resultado"></div>
+
 </div>
-
-<div id="reader" class="oculto"></div>
-<div id="resultado"></div>
 
 <script src="scanner.js"></script>
 </body>
+</html>
