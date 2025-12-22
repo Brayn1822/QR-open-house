@@ -59,19 +59,19 @@ function abrirFormulario(qr = "") {
   document.getElementById("pantalla-scanner").classList.add("hidden");
   document.getElementById("pantalla-resultado").classList.remove("hidden");
 
-  document.getElementById("pantalla-resultado").innerHTML = `
-    <div>
-      <h2>🆕 Nuevo Registro</h2>
-      <input id="qr" placeholder="ID QR" value="${qr}"><br><br>
-      <input id="doc" placeholder="Documento"><br><br>
-      <input id="nom" placeholder="Nombre"><br><br>
-      <input id="area" placeholder="Área"><br><br>
-      <input id="pass" type="password" placeholder="Contraseña"><br><br>
-      <button class="btn btn-new" onclick="registrar()">Registrar</button>
-      <br><br>
-      <button class="btn btn-cancel" onclick="volverMenu()">Cancelar</button>
-    </div>
-  `;
+ document.getElementById("pantalla-resultado").innerHTML = `
+  <div style="width:100%; max-width:400px; margin:auto;">
+    <h2>🆕 Nuevo Registro</h2>
+    <input id="qr" placeholder="ID QR" value="${qr}" style="width:100%;height:45px"><br><br>
+    <input id="doc" placeholder="Documento" style="width:100%;height:45px"><br><br>
+    <input id="nom" placeholder="Nombre" style="width:100%;height:45px"><br><br>
+    <input id="area" placeholder="Área" style="width:100%;height:45px"><br><br>
+    <input id="pass" type="password" placeholder="Contraseña" style="width:100%;height:45px"><br><br>
+    <button class="btn btn-new" onclick="registrar()">Registrar</button><br><br>
+    <button class="btn btn-cancel" onclick="volverMenu()">Cancelar</button>
+  </div>
+`;
+
 }
 
 // 👉 REGISTRAR
