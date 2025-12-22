@@ -1,9 +1,43 @@
-#btnNuevo {
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  margin: 10px;
+}
+
+#acciones {
+  display: flex;
+  justify-content: space-around;
   margin: 15px;
-  padding: 10px 20px;
-  font-size: 16px;
+}
+
+#acciones button {
+  width: 45%;
+  height: 80px;
+  font-size: 20px;
+  border-radius: 12px;
+  border: none;
   background: #005eff;
   color: white;
-  border: none;
-  border-radius: 8px;
+}
+
+#reader {
+  width: 95vw;
+  height: 70vh;
+  margin: auto;
+}
+
+.oculto {
+  display: none;
+}
+
+.ok {
+  background: #e6ffe6;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 18px;
 }
