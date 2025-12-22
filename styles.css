@@ -1,15 +1,9 @@
-body {
-  font-family: Arial;
-  text-align: center;
-}
-
-#reader {
-  width: 300px;
-  margin: auto;
-}
-
-.ok {
-  background: #e8ffe8;
-  padding: 15px;
-  border-radius: 10px;
+#btnNuevo {
+  margin: 15px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #005eff;
+  color: white;
+  border: none;
+  border-radius: 8px;
 }
