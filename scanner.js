@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyFOXViRMBoMZy-MSvkJGTmUBg_m-wPyPgLmtL5hY5d-BFKqR2Gc36hJ_Iq__j1dCQa/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxNLivX3aZ00dAaHs3UFHb6sBaOx3lICZ-TxyZQCHd2x44evy_GsM0PoBmfJAe7_jd-/exec";
 
 let qrReader = null;
 let processing = false;
@@ -137,11 +137,24 @@ function abrirFormulario() {
  * REGISTRAR
  ************************************/
 function registrar() {
+  const id = document.getElementById("id").value;
+  const documento = document.getElementById("doc").value.trim();
+  const nombre = document.getElementById("nom").value.trim();
+  const area = document.getElementById("area").value;
+  const password = document.getElementById("pass").value;
+
+  if (!documento || !nombre || !area || !password) {
+    mostrarError("⚠️ Completa todos los campos");
+    return;
+  }
+
   const params = new URLSearchParams({
     action: "register",
-    nombre: document.getElementById("nom").value,
-    area: document.getElementById("area").value,
-    password: document.getElementById("pass").value
+    id: id,
+    documento: documento,
+    nombre: nombre,
+    area: area,
+    password: password
   });
 
   fetch(`${API_URL}?${params.toString()}`)
@@ -155,6 +168,7 @@ function registrar() {
     })
     .catch(() => mostrarError("❌ Error de conexión"));
 }
+
 
 
 
