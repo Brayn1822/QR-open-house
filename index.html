@@ -5,7 +5,10 @@
   <title>Asistencia Manantial</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Lector QR -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -23,14 +26,14 @@
     <section id="menu" class="pantalla activa">
       <h1>Asistencia</h1>
 
-      <button class="btn btn-scan" onclick="abrirScanner()">Leer Código QR</button>
-      <button class="btn btn-new" onclick="abrirFormulario()">Crear Nuevo1</button>
+      <button class="btn btn-scan" onclick="abrirScanner()">📷 Leer Código QR</button>
+      <button class="btn btn-new" onclick="abrirFormulario()">➕ Crear Nuevo</button>
     </section>
 
     <!-- SCANNER -->
     <section id="scanner" class="pantalla">
       <div id="reader"></div>
-      <button class="btn btn-cancel" onclick="volverMenu()">Volver</button>
+      <button class="btn btn-cancel" onclick="volverMenu()">⬅ Volver</button>
     </section>
 
     <!-- RESULTADO / FORM -->
