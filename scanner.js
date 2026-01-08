@@ -1,18 +1,20 @@
-/************************************
- * CONFIG
- ************************************/
-const API_URL = "https://script.google.com/macros/s/AKfycbw76d4z57pYvr4lnUROTwQOQYWPnhxz6GoQ1A5XOFQrfDelqDmYzOE-7WdX9Ox8MtVb/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxtmS-mLeN5awltMp_eN2NRqYFH4s9cYYa5i-ForS_oMKRBPEevMWuoY-QDY4dRwTSS/exec";
 
 let qrReader = null;
 let processing = false;
 
 /************************************
+ * UTIL
+ ************************************/
+function generarIdRegistro() {
+  return "R-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+/************************************
  * PANTALLAS
  ************************************/
 function mostrar(id) {
-  document.querySelectorAll(".pantalla").forEach(p =>
-    p.classList.remove("activa")
-  );
+  document.querySelectorAll(".pantalla").forEach(p => p.classList.remove("activa"));
   document.getElementById(id).classList.add("activa");
 }
 
@@ -41,7 +43,7 @@ function abrirScanner() {
 }
 
 /************************************
- * LECTURA QR (CLAVE)
+ * LECTURA QR
  ************************************/
 function onScanSuccess(text) {
   if (processing) return;
@@ -51,12 +53,11 @@ function onScanSuccess(text) {
 
   let id = text;
 
-  // 🔥 aceptar URL con ?qr o ?id
   if (text.startsWith("http")) {
     try {
       const url = new URL(text);
       id = url.searchParams.get("qr") || url.searchParams.get("id");
-    } catch (e) {}
+    } catch {}
   }
 
   if (!id) {
@@ -66,7 +67,7 @@ function onScanSuccess(text) {
 
   fetch(`${API_URL}?id=${encodeURIComponent(id)}`)
     .then(r => r.json())
-    .then(data => procesarRespuesta(data, id))
+    .then(d => procesarRespuesta(d, id))
     .catch(() => mostrarError("❌ Error de conexión"));
 }
 
@@ -78,7 +79,7 @@ function procesarRespuesta(data, id) {
     mostrarMensaje(`
       <div class="ok">
         <h2>✅ Asistencia registrada</h2>
-        <p><strong>${data.nombre}</strong></p>
+        <strong>${data.nombre}</strong>
         <p>${data.area}</p>
       </div>
     `);
@@ -91,7 +92,65 @@ function procesarRespuesta(data, id) {
     return;
   }
 
-  abrirFormulario(id);
+  abrirFormulario();
+}
+
+/************************************
+ * FORMULARIO
+ ************************************/
+function abrirFormulario() {
+  const idAuto = generarIdRegistro();
+
+  mostrar("pantalla-resultado");
+  document.getElementById("pantalla-resultado").innerHTML = `
+    <div class="form-metal">
+      <h2>🆕 Nuevo Registro</h2>
+
+      <input id="id" value="${idAuto}" readonly>
+      <input id="doc" placeholder="Documento">
+      <input id="nom" placeholder="Nombre completo">
+
+      <select id="area">
+        <option value="">Área de servicio</option>
+        <option>ACADEMIA</option>
+        <option>ALABANZA</option>
+        <option>CONÉCTATE</option>
+        <option>DANZA</option>
+        <option>GRUPOS DE CRECIMIENTO</option>
+        <option>INTERCESIÓN Y RESTAURACIÓN</option>
+        <option>MKIDS</option>
+        <option>ON FIRE</option>
+        <option>PAREJAS</option>
+        <option>PRODUCCIÓN</option>
+        <option>WARRIORS</option>
+      </select>
+
+      <input id="pass" type="password" placeholder="Contraseña">
+
+      <button class="btn btn-new" onclick="registrar()">Registrar</button>
+      <button class="btn btn-cancel" onclick="volverMenu()">Cancelar</button>
+    </div>
+  `;
+}
+
+/************************************
+ * REGISTRAR
+ ************************************/
+function registrar() {
+  fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id: document.getElementById("id").value,
+      documento: document.getElementById("doc").value,
+      nombre: document.getElementById("nom").value,
+      area: document.getElementById("area").value,
+      password: document.getElementById("pass").value
+    })
+  })
+    .then(r => r.json())
+    .then(d => procesarRespuesta(d))
+    .catch(() => mostrarError("❌ Error al registrar"));
 }
 
 /************************************
@@ -109,40 +168,4 @@ function mostrarError(msg) {
       <button class="btn btn-cancel" onclick="volverMenu()">Volver</button>
     </div>
   `);
-}
-
-/************************************
- * FORM
- ************************************/
-function abrirFormulario(id = "") {
-  mostrar("pantalla-resultado");
-  document.getElementById("pantalla-resultado").innerHTML = `
-    <div>
-      <h2>🆕 Nuevo Registro</h2>
-      <input id="qr" value="${id}" placeholder="ID"><br><br>
-      <input id="doc" placeholder="Documento"><br><br>
-      <input id="nom" placeholder="Nombre"><br><br>
-      <input id="area" placeholder="Área"><br><br>
-      <input id="pass" type="password" placeholder="Contraseña"><br><br>
-      <button class="btn btn-new" onclick="registrar()">Registrar</button>
-      <button class="btn btn-cancel" onclick="volverMenu()">Cancelar</button>
-    </div>
-  `;
-}
-
-function registrar() {
-  fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id: qr.value,
-      documento: doc.value,
-      nombre: nom.value,
-      area: area.value,
-      password: pass.value
-    })
-  })
-    .then(r => r.json())
-    .then(d => procesarRespuesta(d, qr.value))
-    .catch(() => mostrarError("❌ Error al registrar"));
 }
