@@ -8,11 +8,11 @@ html, body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: #000;
 }
 
-/* CONTENEDOR GENERAL */
+/* CONTENEDOR */
 #app {
   width: 100%;
   height: 100%;
@@ -29,7 +29,6 @@ html, body {
   background: #000;
   display: flex;
   flex-direction: column;
-  color: #fff;
   overflow: hidden;
 }
 
@@ -43,7 +42,7 @@ html, body {
   }
 }
 
-/* FONDO LOGO DIFUMINADO */
+/* LOGO DIFUMINADO */
 .app-frame::before {
   content: "";
   position: absolute;
@@ -52,40 +51,33 @@ html, body {
   background-size: 65%;
   opacity: 0.08;
   filter: blur(6px);
-  z-index: 0;
-  pointer-events: none; /* 🔥 CLAVE */
+  pointer-events: none;
 }
 
+/* CAPA OSCURA */
 .app-frame::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,.85),
-    rgba(0,0,0,.95)
-  );
-  z-index: 1;
-  pointer-events: none; /* 🔥 CLAVE */
+  background: rgba(0,0,0,.85);
+  pointer-events: none;
 }
 
-
-/* TODO EL CONTENIDO ENCIMA */
+/* TODO ENCIMA */
 .app-frame > * {
   position: relative;
   z-index: 2;
 }
 
-/* LOGO SUPERIOR */
+/* LOGO */
 .logo {
   text-align: center;
   padding: 3vh 0 1vh;
 }
 
 .logo img {
-  width: 38%;
+  width: 40%;
   max-width: 150px;
-  opacity: .95;
 }
 
 /* PANTALLAS */
@@ -96,31 +88,20 @@ html, body {
   justify-content: center;
   align-items: center;
   padding: 4vh 6vw;
+  color: #fff;
 }
 
 .pantalla.activa {
   display: flex;
 }
 
-/* TEXTOS */
+/* TITULOS */
 h1 {
   font-size: clamp(28px, 6vw, 34px);
-  margin-bottom: 4vh;
-  font-weight: 700;
-  letter-spacing: .5px;
+  margin-bottom: 5vh;
 }
 
-h2 {
-  font-size: clamp(22px, 5vw, 28px);
-  margin-bottom: 2vh;
-}
-
-p {
-  font-size: clamp(16px, 4vw, 20px);
-  opacity: .85;
-}
-
-/* BOTONES METALIZADOS */
+/* BOTONES */
 .btn {
   width: 100%;
   height: 12vh;
@@ -128,77 +109,40 @@ p {
   max-height: 96px;
   border-radius: 999px;
   font-size: clamp(20px, 4.5vw, 26px);
-  font-weight: 600;
-  border: 1px solid rgba(255,255,255,.15);
-  color: #eaeaea;
+  font-weight: 700;
+  border: none;
+  color: #fff;
   margin: 1.5vh 0;
-  background: linear-gradient(
-    145deg,
-    #2a2a2a,
-    #1a1a1a
-  );
-  box-shadow:
-    inset 0 1px 1px rgba(255,255,255,.1),
-    0 8px 20px rgba(0,0,0,.6);
-  transition: transform .15s ease, box-shadow .15s ease;
+  background: linear-gradient(145deg, #3a3a3a, #1a1a1a);
 }
 
-.btn:active {
-  transform: scale(.97);
-  box-shadow:
-    inset 0 2px 4px rgba(0,0,0,.8);
-}
+.btn-scan { background: linear-gradient(145deg, #444, #222); }
+.btn-new { background: linear-gradient(145deg, #555, #333); }
+.btn-cancel { background: linear-gradient(145deg, #222, #111); }
 
-/* VARIANTES */
-.btn-scan {
-  background: linear-gradient(145deg, #3a3a3a, #222);
-}
-
-.btn-new {
-  background: linear-gradient(145deg, #4a4a4a, #2a2a2a);
-}
-
-.btn-cancel {
-  background: linear-gradient(145deg, #262626, #161616);
-  opacity: .85;
-}
-
-/* LECTOR QR */
+/* QR */
 #reader {
   width: 100%;
   height: 60vh;
   border-radius: 20px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.1);
 }
 
-/* TARJETA RESULTADO */
+/* RESULTADO */
 .ok {
-  background: rgba(255,255,255,.95);
+  background: #fff;
   color: #000;
   padding: 4vh 4vw;
   border-radius: 24px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.4);
   text-align: center;
-}
-
-/* ESTADOS */
-.ok h2 {
-  font-weight: 700;
 }
 
 .estado {
   margin-top: 2vh;
-  font-size: clamp(18px, 4vw, 22px);
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.estado.qr {
-  color: #666;
-}
-
-.estado.registrado {
-  color: #0a7d3b;
-}
+.estado.qr { color: #555; }
+.estado.registrado { color: #0a7d3b; }
