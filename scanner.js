@@ -137,47 +137,25 @@ function abrirFormulario() {
  * REGISTRAR
  ************************************/
 function registrar() {
-  const payload = {
-    id: document.getElementById("id").value,
-    documento: document.getElementById("doc").value,
+  const params = new URLSearchParams({
+    action: "register",
     nombre: document.getElementById("nom").value,
     area: document.getElementById("area").value,
     password: document.getElementById("pass").value
-  };
+  });
 
-  if (!payload.nombre || !payload.area || !payload.password) {
-    mostrarError("❌ Completa todos los campos");
-    return;
-  }
-
-  fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-    .then(r => r.text())
-    .then(txt => {
-      let data;
-      try {
-        data = JSON.parse(txt);
-      } catch {
-        throw "Respuesta inválida del servidor";
-      }
-
-      if (data.status === "denied") {
+  fetch(`${API_URL}?${params.toString()}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === "created") {
+        procesarRespuesta(data);
+      } else {
         mostrarError("❌ Contraseña incorrecta");
-        return;
       }
-
-      if (data.status === "error") {
-        mostrarError("❌ " + data.msg);
-        return;
-      }
-
-      procesarRespuesta(data, payload.id);
     })
-    .catch(err => mostrarError("❌ " + err));
+    .catch(() => mostrarError("❌ Error de conexión"));
 }
+
 
 
 /************************************
