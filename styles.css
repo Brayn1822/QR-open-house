@@ -8,11 +8,11 @@ html, body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #111;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #000;
 }
 
-/* CONTENEDOR */
+/* CONTENEDOR GENERAL */
 #app {
   width: 100%;
   height: 100%;
@@ -25,10 +25,12 @@ html, body {
 .app-frame {
   width: 100%;
   height: 100%;
+  position: relative;
   background: #000;
   display: flex;
   flex-direction: column;
   color: #fff;
+  overflow: hidden;
 }
 
 /* PC */
@@ -36,21 +38,52 @@ html, body {
   .app-frame {
     width: 420px;
     height: 90vh;
-    border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,.5);
-    overflow: hidden;
+    border-radius: 28px;
+    box-shadow: 0 25px 50px rgba(0,0,0,.6);
   }
 }
 
-/* LOGO */
+/* FONDO LOGO DIFUMINADO */
+.app-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("assets/logo.png") center center no-repeat;
+  background-size: 65%;
+  opacity: 0.08;
+  filter: blur(6px);
+  z-index: 0;
+}
+
+/* CAPA OSCURA */
+.app-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,.85),
+    rgba(0,0,0,.95)
+  );
+  z-index: 1;
+}
+
+/* TODO EL CONTENIDO ENCIMA */
+.app-frame > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* LOGO SUPERIOR */
 .logo {
   text-align: center;
   padding: 3vh 0 1vh;
 }
 
 .logo img {
-  width: 40%;
-  max-width: 160px;
+  width: 38%;
+  max-width: 150px;
+  opacity: .95;
 }
 
 /* PANTALLAS */
@@ -60,49 +93,110 @@ html, body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 4vh 4vw;
+  padding: 4vh 6vw;
 }
 
 .pantalla.activa {
   display: flex;
 }
 
-/* TITULOS */
-h1, h2, p {
-  color: #fff;
-  text-align: center;
+/* TEXTOS */
+h1 {
+  font-size: clamp(28px, 6vw, 34px);
+  margin-bottom: 4vh;
+  font-weight: 700;
+  letter-spacing: .5px;
 }
 
-/* BOTONES */
+h2 {
+  font-size: clamp(22px, 5vw, 28px);
+  margin-bottom: 2vh;
+}
+
+p {
+  font-size: clamp(16px, 4vw, 20px);
+  opacity: .85;
+}
+
+/* BOTONES METALIZADOS */
 .btn {
   width: 100%;
   height: 12vh;
-  min-height: 70px;
-  max-height: 100px;
+  min-height: 72px;
+  max-height: 96px;
   border-radius: 999px;
-  font-size: clamp(20px, 4vw, 26px);
-  font-weight: 700;
-  border: none;
-  color: white;
+  font-size: clamp(20px, 4.5vw, 26px);
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,.15);
+  color: #eaeaea;
   margin: 1.5vh 0;
+  background: linear-gradient(
+    145deg,
+    #2a2a2a,
+    #1a1a1a
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.1),
+    0 8px 20px rgba(0,0,0,.6);
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
-.btn-scan { background: #005eff; }
-.btn-new { background: #00a86b; }
-.btn-cancel { background: #666; }
+.btn:active {
+  transform: scale(.97);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.8);
+}
 
-/* QR */
+/* VARIANTES */
+.btn-scan {
+  background: linear-gradient(145deg, #3a3a3a, #222);
+}
+
+.btn-new {
+  background: linear-gradient(145deg, #4a4a4a, #2a2a2a);
+}
+
+.btn-cancel {
+  background: linear-gradient(145deg, #262626, #161616);
+  opacity: .85;
+}
+
+/* LECTOR QR */
 #reader {
   width: 100%;
   height: 60vh;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
 }
 
-/* OK */
+/* TARJETA RESULTADO */
 .ok {
-  background: #e6ffe6;
+  background: rgba(255,255,255,.95);
   color: #000;
-  padding: 4vh 3vw;
-  border-radius: 20px;
-  font-size: clamp(18px, 4vw, 22px);
+  padding: 4vh 4vw;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.4);
   text-align: center;
+}
+
+/* ESTADOS */
+.ok h2 {
+  font-weight: 700;
+}
+
+.estado {
+  margin-top: 2vh;
+  font-size: clamp(18px, 4vw, 22px);
+  font-weight: 600;
+}
+
+.estado.qr {
+  color: #666;
+}
+
+.estado.registrado {
+  color: #0a7d3b;
 }
