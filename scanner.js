@@ -1,153 +1,167 @@
-/************ CONFIG ************/
+/************************************
+ CONFIG
+*************************************/
 const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
 
-/************ VARIABLES ************/
+/************************************
+ VARIABLES
+*************************************/
 let qrReader = null;
-let procesando = false;
+let cameraRunning = false;
+let processing = false;
 
-/************ UI ************/
+/************************************
+ CONTROL DE PANTALLAS
+*************************************/
 function mostrar(id) {
   document.querySelectorAll(".pantalla").forEach(p => p.classList.remove("activa"));
   document.getElementById(id).classList.add("activa");
 }
 
-/************ MENU ************/
+/************************************
+ MENU
+*************************************/
 function volverMenu() {
-  procesando = false;
-  detenerCamara();
-  mostrar("menu");
+  processing = false;
+  if (qrReader && cameraRunning) qrReader.pause(true);
+  mostrar("pantalla-menu");
 }
 
-/************ SCANNER ************/
-async function abrirScanner() {
-  mostrar("scanner");
+/************************************
+ SCANNER
+*************************************/
+function abrirScanner() {
+  mostrar("pantalla-scanner");
 
-  if (!qrReader) {
-    qrReader = new Html5Qrcode("reader");
-  }
-
-  try {
-    await qrReader.start(
-      { facingMode: "environment" },
-      { fps: 12, qrbox: 260 },
-      leerQR
-    );
-  } catch (e) {
-    alert("No se pudo acceder a la cámara");
-    volverMenu();
-  }
+  setTimeout(async () => {
+    if (!qrReader) {
+      qrReader = new Html5Qrcode("reader");
+      try {
+        await qrReader.start(
+          { facingMode: "environment" },
+          { fps: 15, qrbox: 250 },
+          onScanSuccess
+        );
+        cameraRunning = true;
+      } catch {
+        alert("No se pudo acceder a la cámara");
+        volverMenu();
+      }
+    } else {
+      qrReader.resume();
+    }
+  }, 300);
 }
 
-function detenerCamara() {
-  if (qrReader) {
-    qrReader.stop().catch(() => {});
-  }
-}
-
-/************ LECTURA QR ************/
-function leerQR(text) {
-  if (procesando) return;
-  procesando = true;
-
-  qrReader.pause();
+/************************************
+ LECTURA QR
+*************************************/
+function onScanSuccess(text) {
+  if (processing) return;
+  processing = true;
+  qrReader.pause(true);
 
   fetch(`${API_URL}?id=${encodeURIComponent(text)}`)
     .then(r => r.json())
-    .then(data => manejarRespuesta(data, text))
-    .catch(() => mostrarError("Error de conexión"));
+    .then(data => procesarRespuesta(data, text))
+    .catch(() => mostrarError("❌ Error de conexión"));
 }
 
-/************ RESPUESTA ************/
-function manejarRespuesta(data, qr) {
-
+/************************************
+ RESPUESTA
+*************************************/
+function procesarRespuesta(data, qr) {
   if (data.status === "ok" || data.status === "created") {
-    mostrarResultado(
-      data.nombre,
-      data.area,
-      data.status === "created" ? "REGISTRADO" : "QR"
-    );
+    mostrarMensaje(`
+      <div class="ok">
+        <h2>✅ Asistencia registrada</h2>
+        <p><strong>${data.nombre}</strong></p>
+        <p>${data.area}</p>
+      </div>
+    `);
 
-    setTimeout(reanudarScanner, 1500);
+    setTimeout(() => {
+      processing = false;
+      qrReader.resume();
+      mostrar("pantalla-scanner");
+    }, 1200);
     return;
   }
 
   abrirFormulario(qr);
 }
 
-/************ RESULTADO ************/
-function mostrarResultado(nombre, area, estado) {
-  mostrar("resultado");
-
-  document.getElementById("resultado").innerHTML = `
-    <div class="ok">
-      <h2>${nombre}</h2>
-      <p>${area}</p>
-      <div class="estado ${estado === "REGISTRADO" ? "registrado" : "qr"}">
-        Estado ${estado}
-      </div>
-    </div>
-  `;
+/************************************
+ MENSAJES
+*************************************/
+function mostrarMensaje(html) {
+  mostrar("pantalla-resultado");
+  document.getElementById("pantalla-resultado").innerHTML = html;
 }
 
-/************ FORMULARIO ************/
-function abrirFormulario(qr = "") {
-  mostrar("resultado");
-
-  document.getElementById("resultado").innerHTML = `
+function mostrarError(msg) {
+  mostrarMensaje(`
     <div class="ok">
-      <h2>Nuevo Registro</h2>
+      <h2>${msg}</h2>
+      <button class="btn btn-cancel" onclick="salirError()">Volver</button>
+    </div>
+  `);
+}
 
+function salirError() {
+  processing = false;
+  qrReader.resume();
+  mostrar("pantalla-scanner");
+}
+
+/************************************
+ FORMULARIO
+*************************************/
+function abrirFormulario(qr = "") {
+  mostrar("pantalla-resultado");
+
+  document.getElementById("pantalla-resultado").innerHTML = `
+    <div style="width:100%;max-width:420px">
+      <h2>🆕 Nuevo Registro</h2>
+
+      <input id="qr" value="${qr}" placeholder="ID QR"><br><br>
       <input id="doc" placeholder="Documento"><br><br>
       <input id="nom" placeholder="Nombre completo"><br><br>
       <input id="area" placeholder="Área de servicio"><br><br>
       <input id="pass" type="password" placeholder="Contraseña"><br><br>
 
-      <button class="btn btn-new" onclick="registrar('${qr}')">Registrar</button>
-      <button class="btn btn-cancel" onclick="reanudarScanner()">Cancelar</button>
+      <button class="btn btn-new" onclick="registrar()">Registrar</button>
+      <button class="btn btn-cancel" onclick="cancelarRegistro()">Cancelar</button>
     </div>
   `;
 }
 
-/************ REGISTRAR ************/
-function registrar(qr) {
+function cancelarRegistro() {
+  processing = false;
+  qrReader.resume();
+  mostrar("pantalla-scanner");
+}
+
+/************************************
+ REGISTRO
+*************************************/
+function registrar() {
   fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      id: qr,
+      id: qr.value,
       documento: doc.value,
       nombre: nom.value,
       area: area.value,
       password: pass.value
     })
   })
-  .then(r => r.json())
-  .then(data => manejarRespuesta(data, qr))
-  .catch(() => mostrarError("Error al registrar"));
+    .then(r => r.json())
+    .then(data => {
+      processing = false;
+      qrReader.resume();
+      procesarRespuesta(data, qr.value);
+    })
+    .catch(() => mostrarError("❌ Error al registrar"));
 }
-
-/************ ERRORES ************/
-function mostrarError(msg) {
-  mostrar("resultado");
-
-  document.getElementById("resultado").innerHTML = `
-    <div class="ok">
-      <h2>${msg}</h2>
-      <button class="btn btn-cancel" onclick="reanudarScanner()">Volver</button>
-    </div>
-  `;
-}
-
-/************ REANUDAR ************/
-function reanudarScanner() {
-  procesando = false;
-  mostrar("scanner");
-  abrirScanner();
-}
-
-/************ EXPONER FUNCIONES ************/
-window.abrirScanner = abrirScanner;
-window.abrirFormulario = abrirFormulario;
-window.volverMenu = volverMenu;
-window.reanudarScanner = reanudarScanner;
-window.registrar = registrar;
