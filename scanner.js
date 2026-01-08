@@ -1,44 +1,26 @@
-/************************************
- CONFIG
-*************************************/
+/************ CONFIG ************/
 const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
 
-/************************************
- VARIABLES
-*************************************/
-let qrReader = null;
-let cameraRunning = false;
-let processing = false;
+/************ VARIABLES ************/
+let qrReader;
+let procesando = false;
 
-/************************************
- CAMBIO DE PANTALLA
-*************************************/
+/************ UI ************/
 function mostrar(id) {
-  document.querySelectorAll(".pantalla").forEach(p =>
-    p.classList.remove("activa")
-  );
+  document.querySelectorAll(".pantalla").forEach(p => p.classList.remove("activa"));
   document.getElementById(id).classList.add("activa");
 }
 
-/************************************
- MENU
-*************************************/
+/************ MENU ************/
 function volverMenu() {
-  processing = false;
-
-  if (qrReader && cameraRunning) {
-    qrReader.stop().catch(()=>{});
-    cameraRunning = false;
-  }
-
-  mostrar("pantalla-menu");
+  procesando = false;
+  detenerCamara();
+  mostrar("menu");
 }
 
-/************************************
- SCANNER
-*************************************/
+/************ SCANNER ************/
 async function abrirScanner() {
-  mostrar("pantalla-scanner");
+  mostrar("scanner");
 
   if (!qrReader) {
     qrReader = new Html5Qrcode("reader");
@@ -47,59 +29,54 @@ async function abrirScanner() {
   try {
     await qrReader.start(
       { facingMode: "environment" },
-      { fps: 15, qrbox: { width: 250, height: 250 } },
-      onScanSuccess
+      { fps: 12, qrbox: 260 },
+      leerQR
     );
-    cameraRunning = true;
-  } catch (e) {
+  } catch {
     alert("No se pudo acceder a la cámara");
     volverMenu();
   }
 }
 
-/************************************
- LECTURA QR
-*************************************/
-function onScanSuccess(text) {
-  if (processing) return;
-  processing = true;
+function detenerCamara() {
+  if (qrReader) {
+    qrReader.stop().catch(() => {});
+  }
+}
 
-  qrReader.pause(true);
+/************ LECTURA ************/
+function leerQR(text) {
+  if (procesando) return;
+  procesando = true;
+
+  qrReader.pause();
 
   fetch(`${API_URL}?id=${encodeURIComponent(text)}`)
     .then(r => r.json())
-    .then(data => procesarRespuesta(data, text))
-    .catch(() => mostrarError("Error de conexión"));
+    .then(data => manejarRespuesta(data, text))
+    .catch(() => error("Error de conexión"));
 }
 
-/************************************
- RESPUESTA API
-*************************************/
-function procesarRespuesta(data, qr) {
+/************ RESPUESTAS ************/
+function manejarRespuesta(data, qr) {
 
-  // EXISTE O RECIÉN REGISTRADO
   if (data.status === "ok" || data.status === "created") {
     mostrarResultado(
       data.nombre,
       data.area,
       data.status === "created" ? "REGISTRADO" : "QR"
     );
-
-    setTimeout(reanudarScanner, 1400);
+    setTimeout(reanudarScanner, 1500);
     return;
   }
 
-  // NO EXISTE
   abrirFormulario(qr);
 }
 
-/************************************
- RESULTADO
-*************************************/
+/************ RESULTADO ************/
 function mostrarResultado(nombre, area, estado) {
-  mostrar("pantalla-resultado");
-
-  document.getElementById("pantalla-resultado").innerHTML = `
+  mostrar("resultado");
+  document.getElementById("resultado").innerHTML = `
     <div class="ok">
       <h2>${nombre}</h2>
       <p>${area}</p>
@@ -110,27 +87,10 @@ function mostrarResultado(nombre, area, estado) {
   `;
 }
 
-/************************************
- ERRORES
-*************************************/
-function mostrarError(msg) {
-  mostrar("pantalla-resultado");
-
-  document.getElementById("pantalla-resultado").innerHTML = `
-    <div class="ok">
-      <h2>❌ ${msg}</h2>
-      <button class="btn btn-cancel" onclick="reanudarScanner()">Volver</button>
-    </div>
-  `;
-}
-
-/************************************
- FORMULARIO REGISTRO
-*************************************/
+/************ FORMULARIO ************/
 function abrirFormulario(qr = "") {
-  mostrar("pantalla-resultado");
-
-  document.getElementById("pantalla-resultado").innerHTML = `
+  mostrar("resultado");
+  document.getElementById("resultado").innerHTML = `
     <div class="ok">
       <h2>Nuevo Registro</h2>
 
@@ -145,10 +105,22 @@ function abrirFormulario(qr = "") {
   `;
 }
 
-/************************************
- REGISTRAR
-*************************************/
+/************ REGISTRAR ************/
 function registrar(qr) {
   fetch(API_URL, {
     method: "POST",
-    hea
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id: qr,
+      documento: doc.value,
+      nombre: nom.value,
+      area: area.value,
+      password: pass.value
+    })
+  })
+  .then(r => r.json())
+  .then(data => manejarRespuesta(data, qr))
+  .catch(() => error("Error al registrar"));
+}
+
+/****
