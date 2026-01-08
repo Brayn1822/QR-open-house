@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxtmS-mLeN5awltMp_eN2NRqYFH4s9cYYa5i-ForS_oMKRBPEevMWuoY-QDY4dRwTSS/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzURA4Uu9C0wRijBJsmGN5CeQ4FEppJlSftxGeoFa_knG4YWYrMXA02a3h-WstVXvYI/exec";
 
 let qrReader = null;
 let processing = false;
@@ -137,21 +137,48 @@ function abrirFormulario() {
  * REGISTRAR
  ************************************/
 function registrar() {
+  const payload = {
+    id: document.getElementById("id").value,
+    documento: document.getElementById("doc").value,
+    nombre: document.getElementById("nom").value,
+    area: document.getElementById("area").value,
+    password: document.getElementById("pass").value
+  };
+
+  if (!payload.nombre || !payload.area || !payload.password) {
+    mostrarError("❌ Completa todos los campos");
+    return;
+  }
+
   fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id: document.getElementById("id").value,
-      documento: document.getElementById("doc").value,
-      nombre: document.getElementById("nom").value,
-      area: document.getElementById("area").value,
-      password: document.getElementById("pass").value
-    })
+    body: JSON.stringify(payload)
   })
-    .then(r => r.json())
-    .then(d => procesarRespuesta(d))
-    .catch(() => mostrarError("❌ Error al registrar"));
+    .then(r => r.text())
+    .then(txt => {
+      let data;
+      try {
+        data = JSON.parse(txt);
+      } catch {
+        throw "Respuesta inválida del servidor";
+      }
+
+      if (data.status === "denied") {
+        mostrarError("❌ Contraseña incorrecta");
+        return;
+      }
+
+      if (data.status === "error") {
+        mostrarError("❌ " + data.msg);
+        return;
+      }
+
+      procesarRespuesta(data, payload.id);
+    })
+    .catch(err => mostrarError("❌ " + err));
 }
+
 
 /************************************
  * UI
