@@ -1,35 +1,21 @@
-/************************************
- CONFIG
-*************************************/
-const API_URL = "https://script.google.com/macros/s/AKfycbw-iXupb4izw-xDbVOeVQjxsP-JIiOjmrsw5dCgeY-G9GDoRVlG434Glhdcvtzkqajc/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxM9U_yy_TQQHID2DvKFetwcfJ5vBbgYGme7wF4_-wRGfaaT-ZxebO7lX0iPd6Sldic/exec";
 
-/************************************
- VARIABLES
-*************************************/
 let qrReader = null;
-let cameraRunning = false;
 let processing = false;
 
-/************************************
- CONTROL DE PANTALLAS
-*************************************/
+/* --------- CONTROL DE PANTALLAS ---------- */
 function mostrar(id) {
   document.querySelectorAll(".pantalla").forEach(p => p.classList.remove("activa"));
   document.getElementById(id).classList.add("activa");
 }
 
-/************************************
- MENU
-*************************************/
 function volverMenu() {
   processing = false;
-  if (qrReader && cameraRunning) qrReader.pause(true);
+  if (qrReader) qrReader.pause(true);
   mostrar("pantalla-menu");
 }
 
-/************************************
- SCANNER
-*************************************/
+/* --------- SCANNER ---------- */
 function abrirScanner() {
   mostrar("pantalla-scanner");
 
@@ -42,7 +28,6 @@ function abrirScanner() {
           { fps: 15, qrbox: 250 },
           onScanSuccess
         );
-        cameraRunning = true;
       } catch {
         alert("No se pudo acceder a la cámara");
         volverMenu();
@@ -50,12 +35,9 @@ function abrirScanner() {
     } else {
       qrReader.resume();
     }
-  }, 300);
+  }, 200);
 }
 
-/************************************
- LECTURA QR
-*************************************/
 function onScanSuccess(text) {
   if (processing) return;
   processing = true;
@@ -67,9 +49,7 @@ function onScanSuccess(text) {
     .catch(() => mostrarError("❌ Error de conexión"));
 }
 
-/************************************
- RESPUESTA
-*************************************/
+/* --------- RESPUESTAS ---------- */
 function procesarRespuesta(data, qr) {
   if (data.status === "ok" || data.status === "created") {
     mostrarMensaje(`
@@ -77,6 +57,7 @@ function procesarRespuesta(data, qr) {
         <h2>✅ Asistencia registrada</h2>
         <p><strong>${data.nombre}</strong></p>
         <p>${data.area}</p>
+        <p class="estado">${data.status === "ok" ? "Estado: QR" : "Estado: REGISTRADO"}</p>
       </div>
     `);
 
@@ -91,9 +72,7 @@ function procesarRespuesta(data, qr) {
   abrirFormulario(qr);
 }
 
-/************************************
- MENSAJES
-*************************************/
+/* --------- MENSAJES ---------- */
 function mostrarMensaje(html) {
   mostrar("pantalla-resultado");
   document.getElementById("pantalla-resultado").innerHTML = html;
@@ -110,25 +89,23 @@ function mostrarError(msg) {
 
 function salirError() {
   processing = false;
-  qrReader.resume();
+  if (qrReader) qrReader.resume();
   mostrar("pantalla-scanner");
 }
 
-/************************************
- FORMULARIO
-*************************************/
+/* --------- FORMULARIO ---------- */
 function abrirFormulario(qr = "") {
   mostrar("pantalla-resultado");
 
   document.getElementById("pantalla-resultado").innerHTML = `
-    <div style="width:100%;max-width:420px">
+    <div class="form">
       <h2>🆕 Nuevo Registro</h2>
 
-      <input id="qr" value="${qr}" placeholder="ID QR"><br><br>
-      <input id="doc" placeholder="Documento"><br><br>
-      <input id="nom" placeholder="Nombre completo"><br><br>
-      <input id="area" placeholder="Área de servicio"><br><br>
-      <input id="pass" type="password" placeholder="Contraseña"><br><br>
+      <input id="qr" value="${qr}" placeholder="ID QR" readonly>
+      <input id="doc" placeholder="Documento">
+      <input id="nom" placeholder="Nombre completo">
+      <input id="area" placeholder="Área de servicio">
+      <input id="pass" type="password" placeholder="Contraseña">
 
       <button class="btn btn-new" onclick="registrar()">Registrar</button>
       <button class="btn btn-cancel" onclick="cancelarRegistro()">Cancelar</button>
@@ -138,13 +115,11 @@ function abrirFormulario(qr = "") {
 
 function cancelarRegistro() {
   processing = false;
-  qrReader.resume();
+  if (qrReader) qrReader.resume();
   mostrar("pantalla-scanner");
 }
 
-/************************************
- REGISTRO
-*************************************/
+/* --------- REGISTRAR ---------- */
 function registrar() {
   fetch(API_URL, {
     method: "POST",
@@ -157,11 +132,11 @@ function registrar() {
       password: pass.value
     })
   })
-    .then(r => r.json())
-    .then(data => {
-      processing = false;
-      qrReader.resume();
-      procesarRespuesta(data, qr.value);
-    })
-    .catch(() => mostrarError("❌ Error al registrar"));
+  .then(r => r.json())
+  .then(data => {
+    processing = false;
+    qrReader.resume();
+    procesarRespuesta(data, qr.value);
+  })
+  .catch(() => mostrarError("❌ Error al registrar"));
 }
