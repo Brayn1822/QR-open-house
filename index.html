@@ -5,10 +5,10 @@
   <title>Asistencia Manantial</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Librería QR -->
+  <!-- Lector QR -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
-  <!-- TU CSS (no lo incluyo como pediste) -->
+  <!-- Estilos -->
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -17,15 +17,20 @@
 <div id="app">
   <div class="app-frame">
 
+    <!-- LOGO -->
+    <div class="logo">
+      <img src="assets/logo.png" alt="Manantial">
+    </div>
+
     <!-- MENU -->
     <section id="pantalla-menu" class="pantalla activa">
-      <h1>📋 Asistencia</h1>
+      <h1>Asistencia</h1>
 
       <button class="btn btn-scan" onclick="abrirScanner()">
         📷 Leer Código QR
       </button>
 
-      <button class="btn btn-new" onclick="abrirFormulario()">
+      <button class="btn btn-new" onclick="abrirFormularioManual()">
         ➕ Crear Nuevo
       </button>
     </section>
