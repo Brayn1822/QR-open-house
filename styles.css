@@ -4,12 +4,23 @@ html, body {
   width: 100%;
   height: 100%;
   margin: 0;
-  overflow: hidden;
   font-family: system-ui, sans-serif;
   background: #000;
+  overflow: hidden;
 }
 
-/* CONTENEDOR */
+/* FONDO LOGO */
+.bg-logo {
+  position: fixed;
+  inset: 0;
+  background: url("assets/logo.png") center no-repeat;
+  background-size: 65%;
+  opacity: 0.08;
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* APP */
 #app {
   width: 100%;
   height: 100%;
@@ -21,10 +32,8 @@ html, body {
 .app-frame {
   width: 100%;
   height: 100%;
-  background: #f1f3f6;
-  display: flex;
-  position: relative;
-  z-index: 1;
+  background: rgba(20,20,20,.85);
+  color: white;
 }
 
 @media (min-width: 768px) {
@@ -32,12 +41,10 @@ html, body {
     width: 420px;
     height: 90vh;
     border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,.4);
-    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,.7);
   }
 }
 
-/* PANTALLAS */
 .pantalla {
   width: 100%;
   height: 100%;
@@ -50,18 +57,15 @@ html, body {
 
 .pantalla.activa { display: flex; }
 
-/* TEXTOS */
 h1 {
   font-size: clamp(28px, 5vw, 36px);
   margin-bottom: 6vh;
 }
 
-/* BOTONES */
 .btn {
   width: 100%;
   height: 12vh;
   min-height: 70px;
-  max-height: 100px;
   border-radius: 999px;
   font-size: clamp(20px, 4vw, 26px);
   font-weight: 700;
@@ -70,21 +74,31 @@ h1 {
   margin: 1.5vh 0;
 }
 
-.btn-scan { background: #005eff; }
-.btn-new { background: #00a86b; }
-.btn-cancel { background: #888; }
+.btn-scan { background: linear-gradient(#666, #333); }
+.btn-new { background: linear-gradient(#4f9, #2a6); }
+.btn-cancel { background: linear-gradient(#777, #444); }
 
-/* QR */
 #reader {
   width: 100%;
   height: 60vh;
 }
 
-/* RESULTADO */
 .ok {
-  background: #e6ffe6;
+  background: rgba(255,255,255,.1);
   padding: 4vh 3vw;
   border-radius: 20px;
-  font-size: clamp(18px, 4vw, 22px);
   text-align: center;
+}
+
+.estado {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.form input {
+  width: 100%;
+  padding: 14px;
+  margin: 6px 0;
+  border-radius: 12px;
+  border: none;
 }
