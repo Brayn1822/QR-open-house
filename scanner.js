@@ -2,7 +2,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
 
 /************ VARIABLES ************/
-let qrReader;
+let qrReader = null;
 let procesando = false;
 
 /************ UI ************/
@@ -32,7 +32,7 @@ async function abrirScanner() {
       { fps: 12, qrbox: 260 },
       leerQR
     );
-  } catch {
+  } catch (e) {
     alert("No se pudo acceder a la cámara");
     volverMenu();
   }
@@ -44,7 +44,7 @@ function detenerCamara() {
   }
 }
 
-/************ LECTURA ************/
+/************ LECTURA QR ************/
 function leerQR(text) {
   if (procesando) return;
   procesando = true;
@@ -54,10 +54,10 @@ function leerQR(text) {
   fetch(`${API_URL}?id=${encodeURIComponent(text)}`)
     .then(r => r.json())
     .then(data => manejarRespuesta(data, text))
-    .catch(() => error("Error de conexión"));
+    .catch(() => mostrarError("Error de conexión"));
 }
 
-/************ RESPUESTAS ************/
+/************ RESPUESTA ************/
 function manejarRespuesta(data, qr) {
 
   if (data.status === "ok" || data.status === "created") {
@@ -66,6 +66,7 @@ function manejarRespuesta(data, qr) {
       data.area,
       data.status === "created" ? "REGISTRADO" : "QR"
     );
+
     setTimeout(reanudarScanner, 1500);
     return;
   }
@@ -76,6 +77,7 @@ function manejarRespuesta(data, qr) {
 /************ RESULTADO ************/
 function mostrarResultado(nombre, area, estado) {
   mostrar("resultado");
+
   document.getElementById("resultado").innerHTML = `
     <div class="ok">
       <h2>${nombre}</h2>
@@ -90,6 +92,7 @@ function mostrarResultado(nombre, area, estado) {
 /************ FORMULARIO ************/
 function abrirFormulario(qr = "") {
   mostrar("resultado");
+
   document.getElementById("resultado").innerHTML = `
     <div class="ok">
       <h2>Nuevo Registro</h2>
@@ -120,7 +123,31 @@ function registrar(qr) {
   })
   .then(r => r.json())
   .then(data => manejarRespuesta(data, qr))
-  .catch(() => error("Error al registrar"));
+  .catch(() => mostrarError("Error al registrar"));
 }
 
-/****
+/************ ERRORES ************/
+function mostrarError(msg) {
+  mostrar("resultado");
+
+  document.getElementById("resultado").innerHTML = `
+    <div class="ok">
+      <h2>${msg}</h2>
+      <button class="btn btn-cancel" onclick="reanudarScanner()">Volver</button>
+    </div>
+  `;
+}
+
+/************ REANUDAR ************/
+function reanudarScanner() {
+  procesando = false;
+  mostrar("scanner");
+  abrirScanner();
+}
+
+/************ EXPONER FUNCIONES ************/
+window.abrirScanner = abrirScanner;
+window.abrirFormulario = abrirFormulario;
+window.volverMenu = volverMenu;
+window.reanudarScanner = reanudarScanner;
+window.registrar = registrar;
