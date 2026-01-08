@@ -67,11 +67,27 @@ function onScanSuccess(text) {
 
   qrReader.pause(true);
 
-  fetch(`${API_URL}?id=${encodeURIComponent(text)}`)
+  // 🔹 EXTRAER ID SI VIENE EN URL
+  let id = text;
+
+  try {
+    if (text.startsWith("http")) {
+      const url = new URL(text);
+      id = url.searchParams.get("id");
+    }
+  } catch (e) {}
+
+  if (!id) {
+    mostrarError("❌ QR inválido");
+    return;
+  }
+
+  fetch(`${API_URL}?id=${encodeURIComponent(id)}`)
     .then(r => r.json())
-    .then(data => procesarRespuesta(data, text))
+    .then(data => procesarRespuesta(data, id))
     .catch(() => mostrarError("❌ Error de conexión"));
 }
+
 
 /************************************
  * RESPUESTAS
