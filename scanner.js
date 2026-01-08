@@ -1,7 +1,7 @@
 /************************************
  CONFIG
 *************************************/
-const API_URL = "https://script.google.com/macros/s/AKfycbwPB-xnPJvEPYhEVdudA6-goe2DH9kCKv7CTuRmSdK0WPuhYF4xXtR6I0_w-mVhyu6Z/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxmDqqX1IgAA78yjlEHKlKGyieZAWh_FH9aTgTXy9WqOuvqsw099SDmAcVQ_9s1suaz/exec";
 
 /************************************
  VARIABLES
