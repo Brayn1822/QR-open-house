@@ -61,9 +61,12 @@ function onScanSuccess(text) {
   }
 
   if (!id) {
-    mostrarError("❌ QR inválido");
-    return;
-  }
+  mostrarError("❌ QR inválido");
+  processing = false;
+  qrReader.resume();
+  return;
+}
+
 
   fetch(`${API_URL}?id=${encodeURIComponent(id)}`)
     .then(r => r.json())
@@ -95,12 +98,6 @@ function procesarRespuesta(data) {
       data.area,
       false
     );
-    return;
-  }
-
-  // ⚠️ DUPLICADO
-  if (data.status === "duplicated") {
-    mostrarDuplicado(data);
     return;
   }
 
