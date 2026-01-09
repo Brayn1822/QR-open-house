@@ -57,7 +57,7 @@ function onScanSuccess(text) {
     try {
       const url = new URL(text);
       id = url.searchParams.get("qr") || url.searchParams.get("id");
-    } catch {}
+    } catch (e) {}
   }
 
   if (!id) {
@@ -74,7 +74,7 @@ function onScanSuccess(text) {
 /************************************
  * RESPUESTA
  ************************************/
-function procesarRespuesta(data, id) {
+function procesarRespuesta(data) {
   if (data.status === "ok" || data.status === "created") {
     mostrarMensaje(`
       <div class="ok">
@@ -150,46 +150,39 @@ function registrar() {
 
   const params = new URLSearchParams({
     action: "register",
-    id: id,
-    documento: documento,
-    nombre: nombre,
-    area: area,
-    password: password
+    id,
+    documento,
+    nombre,
+    area,
+    password
   });
 
   fetch(`${API_URL}?${params.toString()}`)
-  .then(r => r.json())
-  .then(data => {
-
-    if (data.status === "created") {
-      procesarRespuesta(data);
-      return;
-    }
-
-    if (data.status === "duplicated") {
-      mostrarMensaje(`
-        <div class="ok">
-          <h2>⚠️ Registro duplicado</h2>
-          <p><strong>${data.nombre}</strong></p>
-          <p>${data.area}</p>
-          <p>ID réplica: ${data.id}</p>
-        </div>
-      `);
-      return;
-    }
-
-    if (data.status === "denied") {
-      mostrarError("❌ Contraseña incorrecta");
-      return;
-    }
-
-    mostrarError("❌ No se pudo registrar");
-
-  })
-  .catch(() => mostrarError("❌ Error de conexión"));
-
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === "created") {
+        procesarRespuesta(data);
+        return;
+      }
+      if (data.status === "duplicated") {
+        mostrarMensaje(`
+          <div class="ok">
+            <h2>⚠️ Registro duplicado</h2>
+            <p><strong>${data.nombre}</strong></p>
+            <p>${data.area}</p>
+            <p>ID réplica: ${data.id}</p>
+          </div>
+        `);
+        return;
+      }
+      if (data.status === "denied") {
+        mostrarError("❌ Contraseña incorrecta");
+        return;
+      }
+      mostrarError("❌ No se pudo registrar");
+    })
+    .catch(() => mostrarError("❌ Error de conexión"));
 }
-
 
 /************************************
  * UI
