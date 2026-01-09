@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyfRpZbaJ5zmvDNp8x-Im5gaqJkECJ4xfWchVRA471Csb1mTy3xrDYwJvXinullOXbD/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbztkt7WtZzHrTPD7SwFeyYqTYBQcLaDqph5eb-n_p_O1xcJOTzgXJm7Au6Tm_jY4r4K/exec";
 
 let qrReader = null;
 let processing = false;
@@ -192,6 +192,9 @@ function abrirFormulario() {
  * REGISTRAR
  ************************************/
 function registrar() {
+  if (processing) return; // ❌ evita doble click
+  processing = true;
+
   const id = document.getElementById("id").value;
   const documento = document.getElementById("doc").value.trim();
   const nombre = document.getElementById("nom").value.trim();
@@ -200,6 +203,7 @@ function registrar() {
 
   if (!documento || !nombre || !area || !password) {
     mostrarError("⚠️ Completa todos los campos");
+    processing = false;
     return;
   }
 
@@ -215,19 +219,13 @@ function registrar() {
   fetch(`${API_URL}?${params.toString()}`)
     .then(r => r.json())
     .then(data => {
+      processing = false; // desbloquea al terminar
       if (data.status === "created") {
         procesarRespuesta(data);
         return;
       }
       if (data.status === "duplicated") {
-        mostrarMensaje(`
-          <div class="ok">
-            <h2>⚠️ Registro duplicado</h2>
-            <p><strong>${data.nombre}</strong></p>
-            <p>${data.area}</p>
-            <p>ID réplica: ${data.id}</p>
-          </div>
-        `);
+        mostrarDuplicado(data); // ✅ usa tu función de duplicado con botones funcionales
         return;
       }
       if (data.status === "denied") {
@@ -236,7 +234,10 @@ function registrar() {
       }
       mostrarError("❌ No se pudo registrar");
     })
-    .catch(() => mostrarError("❌ Error de conexión"));
+    .catch(() => {
+      processing = false; // desbloquea si hay error
+      mostrarError("❌ Error de conexión");
+    });
 }
 
 /************************************
