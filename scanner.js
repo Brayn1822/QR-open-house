@@ -107,6 +107,13 @@ function procesarRespuesta(data) {
     return;
   }
 
+  // ⚠️ Registro duplicado
+  if (data.status === "duplicated") {
+    mostrarDuplicado(data);
+    return;
+  }
+
+  // ❌ Cualquier otra respuesta
   mostrarError("❌ Respuesta desconocida");
 }
 
