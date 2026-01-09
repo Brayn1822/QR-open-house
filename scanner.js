@@ -75,25 +75,83 @@ function onScanSuccess(text) {
  * RESPUESTA
  ************************************/
 function procesarRespuesta(data) {
-  if (data.status === "ok" || data.status === "created") {
-    mostrarMensaje(`
-      <div class="ok">
-        <h2>✅ Asistencia registrada</h2>
-        <strong>${data.nombre}</strong>
-        <p>${data.area}</p>
-      </div>
-    `);
 
-    setTimeout(() => {
-      processing = false;
-      qrReader.resume();
-      mostrar("pantalla-scanner");
-    }, 1200);
+  // ✅ Asistencia normal
+  if (data.status === "ok") {
+    mostrarMensajeConfirmacion(
+      "✅ Asistencia registrada",
+      data.nombre,
+      data.area,
+      true
+    );
     return;
   }
 
-  abrirFormulario();
+  // 🆕 Registro creado manual
+  if (data.status === "created") {
+    mostrarMensajeConfirmacion(
+      "🆕 Registro creado",
+      data.nombre,
+      data.area,
+      false
+    );
+    return;
+  }
+
+  // ⚠️ DUPLICADO
+  if (data.status === "duplicated") {
+    mostrarDuplicado(data);
+    return;
+  }
+
+  // 🧍 Persona nueva → formulario
+  if (data.status === "new") {
+    abrirFormulario();
+    return;
+  }
+
+  mostrarError("❌ Respuesta desconocida");
 }
+
+function mostrarMensajeConfirmacion(titulo, nombre, area, volverScanner) {
+  mostrar("pantalla-resultado");
+
+  document.getElementById("pantalla-resultado").innerHTML = `
+    <div class="ok">
+      <h2>${titulo}</h2>
+      <strong>${nombre}</strong>
+      <p>${area}</p>
+      <button class="btn btn-new" onclick="${volverScanner ? "volverScanner()" : "volverMenu()"}">
+        OK
+      </button>
+    </div>
+  `;
+}
+
+function mostrarDuplicado(data) {
+  mostrar("pantalla-resultado");
+
+  document.getElementById("pantalla-resultado").innerHTML = `
+    <div class="ok">
+      <h2>⚠️ Registro duplicado</h2>
+      <strong>${data.nombre}</strong>
+      <p>${data.area}</p>
+
+      <div style="margin-top:15px">
+        <button class="btn btn-new" onclick="volverScanner()">OK</button>
+        <button class="btn btn-cancel" onclick="volverMenu()">Cancelar</button>
+      </div>
+    </div>
+  `;
+}
+
+function volverScanner() {
+  processing = false;
+  mostrar("pantalla-scanner");
+  if (qrReader) qrReader.resume();
+}
+
+
 
 /************************************
  * FORMULARIO
