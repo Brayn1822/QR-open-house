@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxNLivX3aZ00dAaHs3UFHb6sBaOx3lICZ-TxyZQCHd2x44evy_GsM0PoBmfJAe7_jd-/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz-CafNauCsXteSZBteaJQ-JwfHPYJFXQkoALHrXAGY0gQm5AMt-iglaahFwK2Ewoom/exec";
 
 let qrReader = null;
 let processing = false;
