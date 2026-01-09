@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbz-CafNauCsXteSZBteaJQ-JwfHPYJFXQkoALHrXAGY0gQm5AMt-iglaahFwK2Ewoom/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyfRpZbaJ5zmvDNp8x-Im5gaqJkECJ4xfWchVRA471Csb1mTy3xrDYwJvXinullOXbD/exec";
 
 let qrReader = null;
 let processing = false;
@@ -158,16 +158,35 @@ function registrar() {
   });
 
   fetch(`${API_URL}?${params.toString()}`)
-    .then(r => r.json())
-    .then(data => {
-      if (data.status === "created") {
-        procesarRespuesta(data);
-      } else {
-        mostrarError("❌ Contraseña incorrecta");
-      }
-    })
-    .catch(() => mostrarError("❌ Error de conexión"));
-}
+  .then(r => r.json())
+  .then(data => {
+
+    if (data.status === "created") {
+      procesarRespuesta(data);
+      return;
+    }
+
+    if (data.status === "duplicated") {
+      mostrarMensaje(`
+        <div class="ok">
+          <h2>⚠️ Registro duplicado</h2>
+          <p><strong>${data.nombre}</strong></p>
+          <p>${data.area}</p>
+          <p>ID réplica: ${data.id}</p>
+        </div>
+      `);
+      return;
+    }
+
+    if (data.status === "denied") {
+      mostrarError("❌ Contraseña incorrecta");
+      return;
+    }
+
+    mostrarError("❌ No se pudo registrar");
+
+  })
+  .catch(() => mostrarError("❌ Error de conexión"));
 
 
 
