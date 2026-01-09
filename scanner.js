@@ -92,14 +92,14 @@ function procesarRespuesta(data) {
 
   // 🆕 Registro creado manual
   if (data.status === "created") {
-    mostrarMensajeConfirmacion(
-      "🆕 Registro creado",
-      data.nombre,
-      data.area,
-      false
-    );
-    return;
-  }
+  mostrarMensajeConfirmacion(
+    "🆕 Registro creado",
+    data.nombre,
+    data.area,
+    abrirFormulario // ✅ vuelve al formulario
+  );
+  return;
+}
 
   // 🧍 Persona nueva → formulario
   if (data.status === "new") {
@@ -117,7 +117,7 @@ function procesarRespuesta(data) {
   mostrarError("❌ Respuesta desconocida");
 }
 
-function mostrarMensajeConfirmacion(titulo, nombre, area, volverScanner) {
+function mostrarMensajeConfirmacion(titulo, nombre, area, volverFn) {
   mostrar("pantalla-resultado");
 
   document.getElementById("pantalla-resultado").innerHTML = `
@@ -125,12 +125,11 @@ function mostrarMensajeConfirmacion(titulo, nombre, area, volverScanner) {
       <h2>${titulo}</h2>
       <strong>${nombre}</strong>
       <p>${area}</p>
-      <button class="btn btn-new" onclick="${volverScanner ? "volverScanner()" : "volverMenu()"}">
-        OK
-      </button>
+      <button class="btn btn-new" onclick="${volverFn}()">OK</button>
     </div>
   `;
 }
+
 
 function mostrarDuplicado(data) {
   mostrar("pantalla-resultado");
