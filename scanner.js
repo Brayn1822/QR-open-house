@@ -188,7 +188,7 @@ function registrar() {
   })
   .catch(() => mostrarError("❌ Error de conexión"));
 
-
+}
 
 
 /************************************
